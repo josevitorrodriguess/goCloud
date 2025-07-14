@@ -34,7 +34,7 @@ func (api *Api) getCallBackFunction(w http.ResponseWriter, r *http.Request) {
 		AvatarURL:  gothUser.AvatarURL,
 	})
 
-	http.Redirect(w, r, "http://localhost:5173", http.StatusFound)
+	http.Redirect(w, r, "http://localhost:3000", http.StatusFound)
 }
 
 func (api *Api) logoutHandler(w http.ResponseWriter, r *http.Request) {

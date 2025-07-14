@@ -17,15 +17,14 @@ func NewAuth() {
 	googleClientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 
 	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-	fmt.Println(os.Getenv("SESSION_KEY"))
+	
 	store.MaxAge(86400 * 30)
-
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true
 	store.Options.Secure = isProd
 
 	gothic.Store = store
 	goth.UseProviders(
-		google.New(googleClientId, googleClientSecret, "http://localhost:3000/auth/google/callback"),
+		google.New(googleClientId, googleClientSecret, "http://localhost:3050/auth/google/callback"),
 	)
 }
