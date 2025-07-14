@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/josevitorrodriguess/goCloud/internal/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -86,7 +87,7 @@ func runMigrations(db *gorm.DB) error {
 	}
 
 	// Recreate tables with new schema
-	if err := db.AutoMigrate(); err != nil {
+	if err := db.AutoMigrate(&domain.User{}); err != nil {
 		return fmt.Errorf("erro ao executar migrações: %v", err)
 	}
 	return nil
