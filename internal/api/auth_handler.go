@@ -2,11 +2,12 @@ package api
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/josevitorrodriguess/goCloud/internal/domain"
+	"github.com/josevitorrodriguess/goCloud/internal/jsonutils"
+	"github.com/josevitorrodriguess/goCloud/internal/logger"
 	"github.com/markbates/goth/gothic"
 )
 
@@ -16,13 +17,22 @@ func (api *Api) getCallBackFunction(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), "provider", provider)
 	r = r.WithContext(ctx)
 
-	user, err := gothic.CompleteUserAuth(w, r)
+	gothUser, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
-		log.Printf("Erro na autenticação OAuth: %v", err)
-		http.Error(w, "Erro na autenticação: "+err.Error(), http.StatusInternalServerError)
+		logger.Error("Erro na autenticação OAuth: %v", err)
+		jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]string{"error": "Authentication failed"})
 		return
 	}
-	fmt.Println(w, "User:", user)
+
+	logger.Info("Usuário autenticado:")
+
+	api.UserUsecase.SaveUser(&domain.User{
+		Provider:   provider,
+		ProviderID: gothUser.UserID,
+		Name:       gothUser.Name,
+		Email:      gothUser.Email,
+		AvatarURL:  gothUser.AvatarURL,
+	})
 
 	http.Redirect(w, r, "http://localhost:5173", http.StatusFound)
 }
@@ -30,38 +40,25 @@ func (api *Api) getCallBackFunction(w http.ResponseWriter, r *http.Request) {
 func (api *Api) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 
-
 	ctx := context.WithValue(r.Context(), "provider", provider)
 	r = r.WithContext(ctx)
 
 	err := gothic.Logout(w, r)
 	if err != nil {
-		log.Printf("Erro no logout: %v", err)
-		http.Error(w, "Erro no logout", http.StatusInternalServerError)
+		logger.Error("Erro no logout: %v", err)
+		jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]string{"error": "Logout failed"})
 		return
 	}
-
 
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
-
 func (api *Api) authHandler(w http.ResponseWriter, r *http.Request) {
+	logger.Info("Entrou no authHandler para iniciar autenticação")
 	provider := chi.URLParam(r, "provider")
-
 
 	ctx := context.WithValue(r.Context(), "provider", provider)
 	r = r.WithContext(ctx)
-
-
-	if gothUser, err := gothic.CompleteUserAuth(w, r); err == nil {
-
-		log.Printf("Usuário já autenticado: %+v", gothUser)
-
-		http.Redirect(w, r, "http://localhost:5173", http.StatusFound)
-		return
-	}
-
 
 	gothic.BeginAuthHandler(w, r)
 }
