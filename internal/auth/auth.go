@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/gorilla/sessions"
@@ -17,7 +16,7 @@ func NewAuth() {
 	googleClientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 
 	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-	
+
 	store.MaxAge(86400 * 30)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true
