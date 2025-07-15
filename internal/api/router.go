@@ -1,8 +1,11 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/josevitorrodriguess/goCloud/internal/jsonutils"
 )
 
 func (api *Api) NewRouter() {
@@ -18,6 +21,9 @@ func (api *Api) NewRouter() {
 		MaxAge:           300,
 	}))
 
+	api.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		jsonutils.EncodeJson(w,r,http.StatusOK,"TUDO CERTO")
+	})
 	api.Router.Get("/auth/{provider}/callback", api.getCallBackFunction)
 	api.Router.Get("/auth/logout/{provider}", api.logoutHandler)
 	api.Router.Get("/auth/{provider}", api.authHandler)
