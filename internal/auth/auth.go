@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/github"
 	"github.com/markbates/goth/providers/google"
 )
 
@@ -14,6 +15,9 @@ const isProd = false
 func NewAuth() {
 	googleClientId := os.Getenv("GOOGLE_CLIENT_ID")
 	googleClientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+
+	githubClientId := os.Getenv("GITHUB_CLIENT_ID")
+	githubClientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
 
 	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 
@@ -25,5 +29,6 @@ func NewAuth() {
 	gothic.Store = store
 	goth.UseProviders(
 		google.New(googleClientId, googleClientSecret, "http://localhost:3050/auth/google/callback"),
+		github.New(githubClientId, githubClientSecret, "http://localhost:3050/auth/github/callback"),
 	)
 }
