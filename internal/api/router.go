@@ -28,5 +28,5 @@ func (api *Api) NewRouter() {
 	api.Router.Get("/auth/logout/{provider}", api.logoutHandler)
 	api.Router.Get("/auth/{provider}", api.authHandler)
 	api.Router.Put("/user/avatar", api.updateAvatarHandler)
-	api.Router.Delete("/user", api.deleteUserHandler)
+	// api.Router.Delete("/user", api.deleteUserHandler)
 }
