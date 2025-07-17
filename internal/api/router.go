@@ -22,11 +22,11 @@ func (api *Api) NewRouter() {
 	}))
 
 	api.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		jsonutils.EncodeJson(w,r,http.StatusOK,"TUDO CERTO")
+		jsonutils.EncodeJson(w, r, http.StatusOK, "TUDO CERTO")
 	})
 	api.Router.Get("/auth/{provider}/callback", api.getCallBackFunction)
-	api.Router.Get("/auth/logout/{provider}", api.logoutHandler)
+	api.Router.With(authMiddleware).Get("/auth/logout/{provider}", api.logoutHandler)
 	api.Router.Get("/auth/{provider}", api.authHandler)
-	api.Router.Put("/user/avatar", api.updateAvatarHandler)
+	// api.Router.Put("/user/avatar", api.updateAvatarHandler)
 	// api.Router.Delete("/user", api.deleteUserHandler)
 }
