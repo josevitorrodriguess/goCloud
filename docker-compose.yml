@@ -20,4 +20,3 @@ volumes:
 networks:
   app_network:
     driver: bridge
-mem_limit: 1g
