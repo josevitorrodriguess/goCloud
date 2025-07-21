@@ -27,7 +27,7 @@ func (api *Api) updateAvatarHandler(w http.ResponseWriter, r *http.Request) {
 func (api *Api) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		UserID uint `json:"user_id"`
-	}	
+	}
 	var body reqBody
 	body, err := jsonutils.DecodeJson[reqBody](r)
 	if err != nil {

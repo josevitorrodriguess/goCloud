@@ -29,4 +29,10 @@ func (api *Api) NewRouter() {
 	api.Router.Get("/auth/{provider}", api.authHandler)
 	// api.Router.Put("/user/avatar", api.updateAvatarHandler)
 	// api.Router.Delete("/user", api.deleteUserHandler)
+
+	// Rotas de arquivos
+	api.Router.With(authMiddleware).Post("/file/upload", api.UploadFileHandler)
+	api.Router.With(authMiddleware).Get("/file/download", api.DownloadFileHandler)
+	api.Router.With(authMiddleware).Get("/file/list", api.ListFilesHandler)
+	api.Router.With(authMiddleware).Delete("/file/delete", api.DeleteFileHandler)
 }

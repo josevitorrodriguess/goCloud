@@ -1,19 +1,21 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/markbates/goth/gothic"
+	"github.com/josevitorrodriguess/goCloud/internal/session"
 )
 
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := gothic.GetFromSession("user", r)
-		if err != nil {
+		email, ok := session.GetSession(r)
+		if !ok {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Usuário não autenticado"))
 			return
 		}
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "user_email", email)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
