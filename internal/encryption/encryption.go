@@ -10,7 +10,6 @@ import (
 	"os"
 )
 
-var MASTER_KEY = getMasterKey()
 
 func getMasterKey() string {
 	key := os.Getenv("ENCRYPT_KEY")
@@ -22,7 +21,7 @@ func getMasterKey() string {
 
 func EncryptFile(data []byte, password string) ([]byte, error) {
 	// Combina chave master com senha do usuário para mais segurança
-	key := generateKey(MASTER_KEY + password)
+	key := generateKey(getMasterKey() + password)
 
 	// Cria cipher AES
 	block, err := aes.NewCipher(key)
@@ -50,7 +49,7 @@ func EncryptFile(data []byte, password string) ([]byte, error) {
 
 func DecryptFile(ciphertext []byte, password string) ([]byte, error) {
 	// Combina chave master com senha do usuário
-	key := generateKey(MASTER_KEY + password)
+	key := generateKey(getMasterKey() + password)
 
 	// Cria cipher AES
 	block, err := aes.NewCipher(key)
