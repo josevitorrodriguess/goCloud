@@ -11,10 +11,12 @@ import (
 	"github.com/markbates/goth/gothic"
 )
 
+type contextKey string
+
 func (api *Api) getCallBackFunction(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 
-	ctx := context.WithValue(r.Context(), "provider", provider)
+	ctx := context.WithValue(r.Context(), contextKey("provider"), provider)
 	r = r.WithContext(ctx)
 
 	gothUser, err := gothic.CompleteUserAuth(w, r)
@@ -40,7 +42,7 @@ func (api *Api) getCallBackFunction(w http.ResponseWriter, r *http.Request) {
 func (api *Api) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 
-	ctx := context.WithValue(r.Context(), "provider", provider)
+	ctx := context.WithValue(r.Context(), contextKey("provider"), provider)
 	r = r.WithContext(ctx)
 
 	err := gothic.Logout(w, r)
@@ -57,7 +59,7 @@ func (api *Api) authHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Info("Entrou no authHandler para iniciar autenticação")
 	provider := chi.URLParam(r, "provider")
 
-	ctx := context.WithValue(r.Context(), "provider", provider)
+	ctx := context.WithValue(r.Context(), contextKey("provider"), provider)
 	r = r.WithContext(ctx)
 
 	gothic.BeginAuthHandler(w, r)
