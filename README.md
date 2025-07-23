@@ -14,7 +14,9 @@
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
 [![AWS S3](https://img.shields.io/badge/AWS-S3-FF9900?style=for-the-badge&logo=amazon-aws)](https://aws.amazon.com/s3/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql)](https://postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/docs/latest/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+
 
 [Features](#-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [API Documentation](#-api-documentation) • [Contributing](#-contributing)
 
@@ -31,7 +33,6 @@
 | **☁️ Scalable Storage** | Leverage AWS S3 for durability and high availability |
 | **🚀 RESTful API** | Clean and organized interface for client integration |
 | **⚡ High Performance** | Built with Go for optimal speed and efficiency |
-| **🛡️ Data Security** | Secure file handling with proper access controls |
 
 ## 🛠️ Tech Stack
 
@@ -43,7 +44,7 @@
 | **Storage** | ![AWS S3](https://img.shields.io/badge/AWS-S3-FF9900?style=flat&logo=amazon-aws&logoColor=white) |
 | **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white) |
 | **Authentication** | ![OAuth](https://img.shields.io/badge/OAuth-2.0-green) |
-| **SDK** | ![AWS SDK](https://img.shields.io/badge/AWS-SDK%20v2-FF9900?style=flat&logo=amazon-aws&logoColor=white) |
+| **Sessions** | ![Redis](https://img.shields.io/badge/-Redis-DC382D?logo=Redis&logoColor=FFF) |
 
 </div>
 
@@ -51,17 +52,20 @@
 
 ```bash
 go-cloud-storage/
-├── 📂 cmd/                    # Executable applications
-│   └── 📂 go-cloud-storage/   # Main application
+├── 📂 cmd/                    # Application executables
+│   └── 📂 goCloud/            # Main application (entrypoint)
 │       └── 📄 main.go         # Application entry point
-├── 📂 api/                    # HTTP handlers and Chi routing
-├── 📂 internal/               # Core business logic, services, models
-│   ├── 📂 database/           # PostgreSQL connection and migrations
-│   ├── 📂 auth/               # Authentication and JWT management
-│   ├── 📂 file/               # File manipulation business logic
-│   ├── 📂 storage/            # AWS S3 interaction layer
-│   └── 📂 user/               # User business logic
-├── 📂 pkg/                    # Shared utility packages
+├── 📂 internal/               # Core business logic and main services
+│   └── 📂 api/                # HTTP handlers and Chi routes
+│   ├── 📂 auth/               # OAuth authentication logic
+│   ├── 📂 domain/             # Domain models (User, File, etc)
+│   ├── 📂 storage/            # AWS S3 integration and storage logic
+│   ├── 📂 encryption/         # File encryption utilities
+│   ├── 📂 jsonutils/          # JSON utility functions
+│   ├── 📂 logger/             # Custom logger
+│   ├── 📂 repository/         # Data access repositories (DB/S3)
+│   ├── 📂 session/            # Session management with Redis
+│   ├── 📂 usecase/            # Business use cases (application logic)
 ├── 📂 config/                 # Environment configuration
 └── 📄 go.mod                  # Go module and dependencies
 ```
@@ -70,58 +74,71 @@ go-cloud-storage/
 
 ### Prerequisites
 
-- Go 1.21 or higher
+- Go 1.24.3 
 - PostgreSQL 13+
 - AWS Account with S3 access
-- Git
+- Github and Google oauth credentials
+- Redis
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/go-cloud-storage.git
-   cd go-cloud-storage
+   git clone https://github.com/josevitorrodriguess/goCloud.git
+   cd goCloud
    ```
 
-2. **Install dependencies**
+2. **Create your environment file**
+   - Copy the example file and edit it:
+     ```bash
+     cp .env.example .env
+     ```
+   - Open `.env` in your favorite editor and fill in the required variables:
+     - **Database:**  
+       `DB_HOST=postgres`  
+       `DB_PORT=5432`  
+       `DB_USER=postgres`  
+       `DB_PASSWORD=your_password`  
+       `DB_NAME=your_db_name`  
+       `DB_SSL_MODE=disable`
+     - **Redis:**  
+       `REDIS_ADDR=redis:6379`  
+       `REDIS_PASSWORD=`
+     - **AWS S3:**  
+       `AWS_S3_BUCKET=your-bucket`  
+       `AWS_REGION=us-east-1`
+     - **Google OAuth:**  
+       `GOOGLE_CLIENT_ID=your_google_client_id`  
+       `GOOGLE_CLIENT_SECRET=your_google_client_secret`
+     - **GitHub OAuth:**  
+       `GITHUB_CLIENT_ID=your_github_client_id`  
+       `GITHUB_CLIENT_SECRET=your_github_client_secret`
+     - **Session:**  
+       `SESSION_KEY=your_session_key`
+     - **Encryption:**  
+       `ENCRYPT_KEY=your_encryption_key`
+
+3. **Configure OAuth providers**
+   - Create OAuth applications in Google Cloud Console and GitHub.
+   - Set the callback URLs to:  
+     `http://localhost:3050/auth/google/callback`  
+     `http://localhost:3050/auth/github/callback`
+   - Paste the generated credentials into your `.env` file.
+
+4. **Start the application with Docker Compose**
    ```bash
-   go mod download
+   docker compose up --build -d
    ```
 
-3. **Set up environment variables**
+5. **Access the application**
+   - Backend: [http://localhost:3050](http://localhost:3050)
+   - Redis and Postgres are managed automatically by Docker Compose.
+
+6. **Check logs (optional)**
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   docker compose logs -f app
    ```
 
-4. **Configure OAuth providers**
-   - Create OAuth applications in Google Cloud Console, GitHub, etc.
-   - Add callback URLs: `http://localhost:8080/api/auth/oauth/{provider}/callback`
-   - Update `.env` with your OAuth credentials
-
-5. **Run the application**
-   ```bash
-   go run cmd/go-cloud-storage/main.go
-   ```
-
-### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | ✅ |
-| `AWS_ACCESS_KEY_ID` | AWS access key | ✅ |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key | ✅ |
-| `AWS_REGION` | AWS region | ✅ |
-| `S3_BUCKET_NAME` | S3 bucket name | ✅ |
-| `JWT_SECRET` | JWT signing secret | ✅ |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | ✅ |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | ✅ |
-| `GITHUB_CLIENT_ID` | GitHub OAuth client ID | ✅ |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret | ✅ |
-| `MICROSOFT_CLIENT_ID` | Microsoft OAuth client ID | ❌ |
-| `MICROSOFT_CLIENT_SECRET` | Microsoft OAuth client secret | ❌ |
-| `OAUTH_REDIRECT_URL` | OAuth callback URL | ✅ |
-| `PORT` | Server port (default: 8080) | ❌ |
 
 ## 📊 API Documentation
 
@@ -129,37 +146,31 @@ go-cloud-storage/
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/auth/oauth/{provider}` | Initiate OAuth flow (redirects to provider) |
-| `GET` | `/api/auth/oauth/{provider}/callback` | OAuth provider callback |
-| `POST` | `/api/auth/refresh` | Refresh access token (if supported by provider) |
-| `POST` | `/api/auth/logout` | Logout and invalidate tokens |
+| `GET` | `/api/auth/{provider}` | Initiate OAuth flow (redirects to provider) |
+| `GET` | `/api/auth/{provider}/callback` | OAuth provider callback |
+| `GET` | `/api/auth/logout/{provider}` | Logout and invalidate tokens |
 
 **Supported OAuth Providers:**
 - Google (`/api/auth/oauth/google`)
 - GitHub (`/api/auth/oauth/github`)
-- Microsoft (`/api/auth/oauth/microsoft`)
+
 
 ### File Management Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/files/upload` | Upload file |
-| `GET` | `/api/files` | List user files |
-| `GET` | `/api/files/{id}` | Download file |
-| `DELETE` | `/api/files/{id}` | Delete file |
+| Method | Endpoint           | Description                |
+|--------|--------------------|----------------------------|
+| POST   | `/file/upload`     | Upload file (multipart, authenticated) |
+| GET    | `/file/download`   | Download file (authenticated, query param: filename) |
+| GET    | `/file/list`       | List user files (authenticated) |
+| DELETE | `/file/delete`     | Delete file (authenticated, query param: filename) |
 
-## 🗺️ Development Roadmap
+**Usage examples:**
+- Upload: send a multipart file to `/file/upload` (authenticated)
+- Download: `GET /file/download?filename=yourfile.ext` (authenticated)
+- List: `GET /file/list` (authenticated)
+- Delete: `DELETE /file/delete?filename=yourfile.ext` (authenticated)
 
-| Status | Feature |
-|--------|---------|
-| ✅ | OAuth Authentication (Google, GitHub, Microsoft) |
-| ✅ | Basic File Management (Upload, Download, List, Delete) |
-| 🔄 | File Version Control |
-| 📋 | Desktop/Web Frontend Client Development |
-| 📋 | Data Encryption at Rest |
-| 📋 | File Sharing & Permissions |
-| 📋 | Advanced Search & Filtering |
-| 📋 | Admin Dashboard |
+
 
 ## 🤝 Contributing
 
@@ -177,7 +188,6 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 - Follow Go best practices and conventions
 - Use `gofmt` to format your code
-- Add tests for new features
 - Update documentation as needed
 
 ## 📄 License
